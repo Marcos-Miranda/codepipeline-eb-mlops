@@ -1,0 +1,31 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      docker: 20
+      python: 3.8
+  pre_build:
+    commands:
+      - echo "Setting up the python environment..."
+      - python3.8 -m venv ~/.venv
+      - source ~/.venv/bin/activate
+      - make install
+      - echo "Logging to ECR..."
+      - $(aws ecr get-login --no-include-email --region $REGION)
+      - echo "Executing linting..."
+      - make lint
+      - echo "Executing tests..."
+      - make test
+  build:
+    commands:
+      - echo "Executing the training pipeline..."
+      - make train
+      - echo "Building the docker image..."
+      - docker build -t $REPOSITORY_URI:latest .
+  post_build:
+    commands:
+      - echo "Pushing the docker image to ECR..."
+      - docker push $REPOSITORY_URI:latest
+artifacts:
+  files:
+    - Dockerrun.aws.json

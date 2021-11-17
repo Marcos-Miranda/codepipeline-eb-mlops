@@ -97,3 +97,8 @@ def model_training_pipe(df: pd.DataFrame) -> pd.DataFrame:
     model, test_metrics = train_model((train_data, test_data))
     pickle.dump(model, open("../models/model.pkl", "wb"))
     return test_metrics
+
+
+if __name__ == "__main__":
+    df = pd.read_csv("../tests/dados_fraude.tsv", sep="\t")
+    model_training_pipe(df)

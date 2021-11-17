@@ -1,3 +1,8 @@
+SHELL := /bin/bash
+
+setup:
+	mkdir models
+
 install:
 	pip install --upgrade pip &&\
 	pip install -r requirements.txt
@@ -11,4 +16,8 @@ test:
 	fi
 	pytest --maxfail=1
 
-all: install test lint
+train:
+	cd src &&\
+	python model_training.py
+
+all: setup install lint test train

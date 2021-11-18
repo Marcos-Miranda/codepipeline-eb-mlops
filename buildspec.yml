@@ -14,7 +14,7 @@ phases:
       - source ~/.venv/bin/activate
       - make install
       - echo "Logging to ECR..."
-      - $(aws ecr get-login --no-include-email --region $REGION)
+      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
       - echo "Executing linting..."
       - make lint
       - echo "Executing tests..."

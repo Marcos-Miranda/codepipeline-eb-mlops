@@ -13,7 +13,7 @@ import pickle
 import json
 
 CAT_FEATURES = ["g", "j", "n", "o", "p", "dia_semana"]
-NUM_FEATURES = ["a", "b", "c", "d", "e", "f", "h", "k", "l", "m", "monto", "dia_mes", "hora"]
+NUM_FEATURES = ["a", "b", "c", "d", "e", "f", "h", "k", "l", "m", "monto", "dia_mes", "hora", "text_feat"]
 
 
 def create_time_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -48,7 +48,7 @@ def create_text_feature(dfs: Tuple[pd.DataFrame, pd.DataFrame]) -> Tuple[pd.Data
         pipe, train_set[text_column], train_set["fraude"], cv=10, method="predict_proba"
     )[:, 1]
     pipe.fit(train_set[text_column], train_set["fraude"])
-    pickle.dump(pipe, open("../models/text_model.pkl", "wb"))
+    pickle.dump(pipe, open("./models/text_model.pkl", "wb"))
     test_set["text_feat"] = pipe.predict_proba(test_set[text_column])[:, 1]
     train_set.drop(columns=text_column, inplace=True)
     test_set.drop(columns=text_column, inplace=True)
@@ -67,7 +67,7 @@ def feature_selection(dfs: Tuple[pd.DataFrame, pd.DataFrame]) -> Tuple[pd.DataFr
     boruta = BorutaPy(rf_model, n_estimators="auto", verbose=2)
     boruta.fit(X_boruta.values, train_set["fraude"].values)
     selected_features = X_boruta.columns[boruta.support_].tolist()
-    json.dump({"columns": selected_features}, open("../models/selected_features.json", "w"))
+    json.dump({"columns": selected_features}, open("./models/selected_features.json", "w"))
     train_set = train_set[selected_features + ["id", "fraude"]]
     test_set = test_set[selected_features + ["id", "fraude"]]
     return (train_set, test_set)
@@ -82,9 +82,7 @@ def set_column_types(dfs: Tuple[pd.DataFrame, pd.DataFrame]) -> Tuple[pd.DataFra
         )
         test_set["n"] = np.select([test_set["n"] == 1, test_set["n"] == 0, test_set["n"].isna()], ["Y", "N", np.nan])
     for col in set(CAT_FEATURES).intersection(set(train_set.columns)):
-        train_set[col] = train_set[col].fillna("missing")
         train_set[col] = train_set[col].astype("category")
-        test_set[col] = test_set[col].fillna("missing")
         test_set[col] = test_set[col].astype("category")
     return (train_set, test_set)
 
@@ -96,5 +94,5 @@ def feat_engineering_pipe(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]
     train_set, test_set = create_text_feature((train_set, test_set))
     train_set, test_set = feature_selection((train_set, test_set))
     train_set, test_set = set_column_types((train_set, test_set))
-    json.dump({"cat_features": CAT_FEATURES}, open("../models/categorical_features.json", "w"))
+    json.dump({"cat_features": CAT_FEATURES}, open("./models/categorical_features.json", "w"))
     return (train_set, test_set)

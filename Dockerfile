@@ -1,9 +1,11 @@
 FROM continuumio/miniconda3:4.8.3
 
-COPY ./requirements.txt /app/requirements.txt
-COPY ./models /models
-COPY ./src/app.py /app/app.py
-COPY ./src/prediction.py /app/prediction.py
+COPY ./requirements.txt \
+     ./src/fraud_detector/app.py \
+     ./src/fraud_detector/prediction.py \
+     /app/
+
+COPY ./models /app/models
 
 WORKDIR /app
 

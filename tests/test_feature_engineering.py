@@ -1,5 +1,5 @@
 import pandas as pd
-from src.feature_engineering import (
+from fraud_detector.feature_engineering import (
     create_time_features,
     dataset_split,
     create_text_feature,
@@ -8,20 +8,11 @@ from src.feature_engineering import (
 )
 import pytest
 from math import isclose
-import os
-from pathlib import Path
 
 
 @pytest.fixture(scope="function")
 def train_df():
-    return pd.read_csv(Path(__file__).parent / "dados_fraude.tsv", sep="\t")
-
-
-@pytest.fixture(scope="function")
-def change_test_dir(request):
-    os.chdir(request.fspath.dirname)
-    yield
-    os.chdir(request.config.invocation_dir)
+    return pd.read_csv("./data/dados_fraude.tsv", sep="\t")
 
 
 def test_create_time_features(train_df):
@@ -42,7 +33,7 @@ def test_dataset_split(train_df):
     assert isclose(class1_prop, test["fraude"].value_counts(True)[1], abs_tol=0.01)
 
 
-def test_create_text_feature(train_df, change_test_dir):
+def test_create_text_feature(train_df):
     train, test = dataset_split(train_df, 0.3)
     train, test = create_text_feature((train, test))
     assert "i" not in train.columns
@@ -53,7 +44,7 @@ def test_create_text_feature(train_df, change_test_dir):
     assert test["text_feat"].std() > 0
 
 
-def test_feature_selection(train_df, change_test_dir):
+def test_feature_selection(train_df):
     train_df = create_time_features(train_df)
     train, test = dataset_split(train_df)
     train, test = create_text_feature((train, test))
@@ -63,7 +54,7 @@ def test_feature_selection(train_df, change_test_dir):
     assert n_selected_feats / n_feats > 0.5
 
 
-def test_set_column_types(train_df, change_test_dir):
+def test_set_column_types(train_df):
     train_df = create_time_features(train_df)
     train, test = dataset_split(train_df)
     train, test = create_text_feature((train, test))
@@ -71,4 +62,3 @@ def test_set_column_types(train_df, change_test_dir):
     assert train["n"].dtype.name == "category"
     train.drop(columns=["id", "fraude"], inplace=True)
     assert "O" not in train.dtypes.to_list()
-    assert train["o"].notna().all()

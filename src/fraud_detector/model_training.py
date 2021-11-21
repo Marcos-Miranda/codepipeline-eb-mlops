@@ -1,6 +1,7 @@
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
-from feature_engineering import feat_engineering_pipe
+from fraud_detector.feature_engineering import feat_engineering_pipe
 import optuna
 from lightgbm import LGBMClassifier
 from imblearn.pipeline import Pipeline
@@ -8,7 +9,7 @@ from imblearn.over_sampling import RandomOverSampler
 from sklearn.metrics import recall_score, precision_score
 from sklearn.model_selection import train_test_split
 from functools import partial
-from typing import Tuple, Union
+from typing import Any, Tuple, Union
 import pickle
 
 
@@ -27,7 +28,7 @@ def obj(
     trial: optuna.trial.Trial,
     train_data: Tuple[pd.DataFrame, pd.DataFrame],
     eval_data: Tuple[pd.DataFrame, pd.DataFrame],
-) -> float:
+) -> Union[float, Any]:
     """Objective function of the hyperparameter optimization."""
     params = {
         "over__sampling_strategy": trial.suggest_float("over__sampling_strategy", 0.5, 1.0),
@@ -48,7 +49,9 @@ def obj(
     return recall_score(eval_data[1], preds)
 
 
-def get_test_metrics(y_true: Union[pd.Series, np.ndarray], y_pred: Union[pd.Series, np.ndarray]) -> pd.DataFrame:
+def get_test_metrics(
+    y_true: Union[pd.Series, npt.NDArray[Any]], y_pred: Union[pd.Series, npt.NDArray[Any]]
+) -> pd.DataFrame:
     """Compute performance metrics on the test set."""
     recall1 = recall_score(y_true, y_pred)
     recall0 = recall_score(y_true, y_pred, pos_label=0)
@@ -95,10 +98,10 @@ def model_training_pipe(df: pd.DataFrame) -> pd.DataFrame:
     """
     train_data, test_data = feat_engineering_pipe(df)
     model, test_metrics = train_model((train_data, test_data))
-    pickle.dump(model, open("../models/model.pkl", "wb"))
+    pickle.dump(model, open("./models/model.pkl", "wb"))
     return test_metrics
 
 
 if __name__ == "__main__":
-    df = pd.read_csv("../tests/dados_fraude.tsv", sep="\t")
+    df = pd.read_csv("./data/dados_fraude.tsv", sep="\t")
     model_training_pipe(df)

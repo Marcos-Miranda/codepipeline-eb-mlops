@@ -1,4 +1,7 @@
-from prediction import predict
+try:
+    from fraud_detector.prediction import predict
+except ModuleNotFoundError:
+    from prediction import predict
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Optional
@@ -36,7 +39,7 @@ def home():
 
 @app.post("/predict")
 def prediction(transaction: Transaction):
-    return predict(transaction.to_dict())
+    return predict(transaction.dict())
 
 
 if __name__ == "__main__":

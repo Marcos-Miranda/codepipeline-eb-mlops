@@ -1,10 +1,14 @@
 .ipynb_checkpoints/
 .pytest_cache/
 __pycache__/
+.mypy_cache/
+venv/
+.vscode/
+*.egg-info/
+.coverage*
 
 data/
 notebooks/
 models/
-*.tsv
 
-.vscode
+pred_tests.sh

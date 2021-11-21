@@ -10,9 +10,9 @@ phases:
   pre_build:
     commands:
       - echo "Setting up the python environment..."
-      - make setup
-      - python3.8 -m venv ~/.venv
-      - source ~/.venv/bin/activate
+      - make prepare
+      - python3.8 -m venv venv
+      - source venv/bin/activate
       - make install
       - echo "Logging in to ECR..."
       - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPOSITORY_URI

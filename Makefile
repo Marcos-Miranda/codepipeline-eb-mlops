@@ -1,23 +1,30 @@
 SHELL := /bin/bash
 
-setup:
+prepare:
 	mkdir models
+	mkdir data
+	aws s3 cp s3://mlops1/dados_fraude.tsv ./data/dados_fraude.tsv
 
 install:
-	pip install --upgrade pip &&\
-	pip install -r requirements.txt
+	pip install --upgrade pip
+	pip install -e .
+	pip install -r requirements_dev.txt
 
 lint:
-	flake8 --max-line-length=119 -v src
+	flake8 -v src
+	mypy -v src --exclude app.py
 
 test:
-	if [ ! -f ./tests/dados_fraude.tsv ]; then\
-		aws s3 cp s3://mlops1/dados_fraude.tsv ./tests/dados_fraude.tsv;\
-	fi
 	pytest --maxfail=1
 
 train:
-	cd src &&\
-	python model_training.py
+	python -m fraud_detector.model_training
 
-all: setup install lint test train
+run-app:
+	python -m fraud_detector.app
+
+build-image:
+	docker build -t model-serving .
+
+run-docker:
+	docker run -p 8080:8080 -it --rm model-serving

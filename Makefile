@@ -12,10 +12,12 @@ install:
 
 lint:
 	flake8 -v src
-	mypy -v src --exclude app.py
+	mypy src --exclude app.py
 
 test:
-	pytest --maxfail=1
+	pytest --maxfail=1 tests/test_feature_engineering.py
+	pytest --maxfail=1 tests/test_model_training.py
+	pytest --maxfail=1 tests/test_prediction.py
 
 train:
 	python -m fraud_detector.model_training

@@ -1,6 +1,5 @@
 import pandas as pd
-from fraud_detector.feature_engineering import feat_engineering_pipe
-from fraud_detector.model_training import train_model
+from fraud_detector.model_training import model_training_pipe
 import pytest
 
 
@@ -10,8 +9,6 @@ def train_df():
 
 
 def test_train_model(train_df):
-    train, test = feat_engineering_pipe(train_df)
-    model, test_metrics = train_model((train, test))
+    test_metrics = model_training_pipe(train_df)
     assert test_metrics.loc["class_0", "recall"] > 0.5
     assert test_metrics.loc["class_1", "recall"] > 0.5
-    model.predict(test.drop(columns=["id", "fraude"]).iloc[0:1])
